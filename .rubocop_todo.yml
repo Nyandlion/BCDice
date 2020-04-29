@@ -234,7 +234,7 @@ Style/GlobalVars:
     - src/diceBot/ArsMagica.rb
     - src/diceBot/SwordWorld.rb
     - src/diceBot/NightmareHunterDeep.rb
-    - src/diceBot/DoubleCross.rb
+    - src/diceBot/DoubleCross/DX.rb
 
 # Offense count: 15
 Style/IfInsideElse:
