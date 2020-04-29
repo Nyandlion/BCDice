@@ -6,6 +6,7 @@ require 'utils/ArithmeticEvaluator'
 
 class DoubleCross < DiceBot
   require 'diceBot/DoubleCross/DX'
+  require 'diceBot/DoubleCross/ET'
 
   # ゲームシステムの識別子
   ID = 'DoubleCross'
@@ -64,32 +65,31 @@ INFO_MESSAGE_TEXT
     end
   end
 
+  # ダイスボット固有コマンドの処理を行う
+  # @param [String] command コマンド
+  # @return [String] ダイスボット固有コマンドの結果
+  # @return [nil] 無効なコマンドだった場合
   def rollDiceCommand(command)
-    if (dx = parse(command))
-      return dx.execute(self)
-    end
+    node = parse(command)
+    return nil unless node
 
-    if command == 'ET'
-      return get_emotion_table
-    end
-
-    return nil
+    return node.execute(self)
   end
 
   private
 
   # 構文解析する
   # @param [String] command コマンド文字列
-  # @return [DX, nil]
+  # @return [ET, DX, nil]
   def parse(command)
     case command
+    when 'ET'
+      ET.new
     when DX_OD_TOOL_RE
-      return parse_dx_od(Regexp.last_match)
+      parse_dx_od(Regexp.last_match)
     when DX_SHIPPU_DOTO_RE
-      return parse_dx_shippu_doto(Regexp.last_match)
+      parse_dx_shippu_doto(Regexp.last_match)
     end
-
-    return nil
   end
 
   # OD Tool式の成功判定コマンドの正規表現マッチ情報からノードを作る
@@ -100,7 +100,6 @@ INFO_MESSAGE_TEXT
     modifier = m[2] ? ArithmeticEvaluator.new.eval(m[2]) : 0
     critical_value = m[4] ? m[4].to_i : 10
 
-    # @type [Integer, nil]
     target_value = m[5] && m[5].to_i
 
     return DX.new(num, critical_value, modifier, target_value)
@@ -114,98 +113,8 @@ INFO_MESSAGE_TEXT
     critical_value = m[2] ? m[2].to_i : 10
     modifier = m[3] ? ArithmeticEvaluator.new.eval(m[3]) : 0
 
-    # @type [Integer, nil]
     target_value = m[5] && m[5].to_i
 
     return DX.new(num, critical_value, modifier, target_value)
-  end
-
-  # ** 感情表
-  def get_emotion_table()
-    output = nil
-
-    pos_dice, pos_table = dx_feel_positive_table
-    neg_dice, neg_table = dx_feel_negative_table
-    dice_now, = roll(1, 2)
-
-    if (pos_table != '1') && (neg_table != '1')
-      if dice_now < 2
-        pos_table = "○" + pos_table
-      else
-        neg_table = "○" + neg_table
-      end
-      output = "感情表(#{pos_dice}-#{neg_dice}) ＞ #{pos_table} - #{neg_table}"
-    end
-
-    return output
-  end
-
-  # ** 感情表（ポジティブ）
-  def dx_feel_positive_table
-    table = [
-      [0, '傾倒(けいとう)'],
-      [5, '好奇心(こうきしん)'],
-      [10, '憧憬(どうけい)'],
-      [15, '尊敬(そんけい)'],
-      [20, '連帯感(れんたいかん)'],
-      [25, '慈愛(じあい)'],
-      [30, '感服(かんぷく)'],
-      [35, '純愛(じゅんあい)'],
-      [40, '友情(ゆうじょう)'],
-      [45, '慕情(ぼじょう)'],
-      [50, '同情(どうじょう)'],
-      [55, '遺志(いし)'],
-      [60, '庇護(ひご)'],
-      [65, '幸福感(こうふくかん)'],
-      [70, '信頼(しんらい)'],
-      [75, '執着(しゅうちゃく)'],
-      [80, '親近感(しんきんかん)'],
-      [85, '誠意(せいい)'],
-      [90, '好意(こうい)'],
-      [95, '有為(ゆうい)'],
-      [100, '尽力(じんりょく)'],
-      [101, '懐旧(かいきゅう)'],
-      [102, '任意(にんい)'],
-    ]
-
-    return dx_feel_table(table)
-  end
-
-  # ** 感情表（ネガティブ）
-  def dx_feel_negative_table
-    table = [
-      [0, '侮蔑(ぶべつ)'],
-      [5, '食傷(しょくしょう)'],
-      [10, '脅威(きょうい)'],
-      [15, '嫉妬(しっと)'],
-      [20, '悔悟(かいご)'],
-      [25, '恐怖(きょうふ)'],
-      [30, '不安(ふあん)'],
-      [35, '劣等感(れっとうかん)'],
-      [40, '疎外感(そがいかん)'],
-      [45, '恥辱(ちじょく)'],
-      [50, '憐憫(れんびん)'],
-      [55, '偏愛(へんあい)'],
-      [60, '憎悪(ぞうお)'],
-      [65, '隔意(かくい)'],
-      [70, '嫌悪(けんお)'],
-      [75, '猜疑心(さいぎしん)'],
-      [80, '厭気(いやけ)'],
-      [85, '不信感(ふしんかん)'],
-      [90, '不快感(ふかいかん)'],
-      [95, '憤懣(ふんまん)'],
-      [100, '敵愾心(てきがいしん)'],
-      [101, '無関心(むかんしん)'],
-      [102, '任意(にんい)'],
-    ]
-
-    return dx_feel_table(table)
-  end
-
-  def dx_feel_table(table)
-    dice_now, = roll(1, 100)
-    output = get_table_by_number(dice_now, table)
-
-    return dice_now, output
   end
 end
