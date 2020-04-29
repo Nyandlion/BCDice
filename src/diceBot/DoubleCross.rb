@@ -34,26 +34,6 @@ INFO_MESSAGE_TEXT
 
   setPrefixes(['\d+DX.*', 'ET'])
 
-  # OD Tool式の成功判定コマンドの正規表現
-  #
-  # キャプチャ内容は以下のとおり:
-  #
-  # 1. ダイス数
-  # 2. 修正値
-  # 4. クリティカル値
-  # 5. 達成値
-  DX_OD_TOOL_RE = /\A(\d+)DX([-+]\d+([-+*]\d+)*)?@(\d+)(?:>=(\d+))?\z/io.freeze
-
-  # 疾風怒濤式の成功判定コマンドの正規表現
-  #
-  # キャプチャ内容は以下のとおり:
-  #
-  # 1. ダイス数
-  # 2. クリティカル値
-  # 3. 修正値
-  # 5. 達成値
-  DX_SHIPPU_DOTO_RE = /\A(\d+)DX(\d+)?([-+]\d+([-+*]\d+)*)?(?:>=(\d+))?\z/io.freeze
-
   def check_nD10(total, _dice_total, dice_list, cmp_op, target)
     return '' unless cmp_op == :>=
 
@@ -79,6 +59,26 @@ INFO_MESSAGE_TEXT
 
   private
 
+  # OD Tool式の成功判定コマンドの正規表現
+  #
+  # キャプチャ内容は以下のとおり:
+  #
+  # 1. ダイス数
+  # 2. 修正値
+  # 3. クリティカル値
+  # 4. 達成値
+  DX_OD_TOOL_RE = /\A(\d+)DX([-+]\d+(?:[-+*]\d+)*)?@(\d+)(?:>=(\d+))?\z/io.freeze
+
+  # 疾風怒濤式の成功判定コマンドの正規表現
+  #
+  # キャプチャ内容は以下のとおり:
+  #
+  # 1. ダイス数
+  # 2. クリティカル値
+  # 3. 修正値
+  # 4. 達成値
+  DX_SHIPPU_DOTO_RE = /\A(\d+)DX(\d+)?([-+]\d+(?:[-+*]\d+)*)?(?:>=(\d+))?\z/io.freeze
+
   # 構文解析する
   # @param [String] command コマンド文字列
   # @return [ET, DX, nil]
@@ -99,9 +99,9 @@ INFO_MESSAGE_TEXT
   def parse_dx_od(m)
     num = m[1].to_i
     modifier = m[2] ? ArithmeticEvaluator.new.eval(m[2]) : 0
-    critical_value = m[4] ? m[4].to_i : 10
+    critical_value = m[3] ? m[3].to_i : 10
 
-    target_value = m[5] && m[5].to_i
+    target_value = m[4] && m[4].to_i
 
     return DX.new(num, critical_value, modifier, target_value)
   end
@@ -114,7 +114,7 @@ INFO_MESSAGE_TEXT
     critical_value = m[2] ? m[2].to_i : 10
     modifier = m[3] ? ArithmeticEvaluator.new.eval(m[3]) : 0
 
-    target_value = m[5] && m[5].to_i
+    target_value = m[4] && m[4].to_i
 
     return DX.new(num, critical_value, modifier, target_value)
   end
