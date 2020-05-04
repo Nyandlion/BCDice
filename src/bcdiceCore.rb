@@ -513,8 +513,13 @@ class BCDice
   def checkMode()
     return unless isMaster()
 
-    output = "GameType = " + @diceBot.id + ", ViewMode = " + @diceBot.sendMode + ", Sort = " + @diceBot.sortType
-    sendMessageToOnlySender(output)
+    items = [
+      "GameType = #{@diceBot.id}",
+      "ViewMode = #{@diceBot.sendMode}",
+      "Sort = #{@diceBot.sortType}",
+    ]
+
+    sendMessageToOnlySender(items.join(', '))
   end
 
   # 簡易オンラインヘルプを表示する
