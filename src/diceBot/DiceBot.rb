@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # frozen_string_literal: true
 
+require 'forwardable'
+
 class DiceBot
   # 空の接頭辞（反応するコマンド）
   EMPTY_PREFIXES_PATTERN = /(^|\s)(S)?()(\s|$)/i.freeze
@@ -62,6 +64,23 @@ class DiceBot
   clearPrefixes
 
   DEFAULT_SEND_MODE = 2 # デフォルトの送信形式(0=結果のみ,1=0+式,2=1+ダイス個別)
+
+  # メソッドの委譲を可能にする
+  extend Forwardable
+
+  # BCDiceに委譲するメソッド（名前変更なし）を設定する
+  def_delegators(
+    :@bcdice,
+    :rand,
+    :roll,
+    :marshalSignOfInequality,
+    :unlimitedRollDiceType,
+    :parren_killer
+  )
+
+  # BCDice#getD66Value を d66 というメソッドで
+  # 呼び出せるようにする
+  def_delegator(:@bcdice, :getD66Value, :d66)
 
   def initialize
     @bcdice = nil
@@ -180,34 +199,10 @@ class DiceBot
 
   attr_writer :upplerRollThreshold
 
-  def rand(max)
-    @bcdice.rand(max)
-  end
-
-  def roll(*args)
-    @bcdice.roll(*args)
-  end
-
-  def marshalSignOfInequality(*args)
-    @bcdice.marshalSignOfInequality(*args)
-  end
-
-  def unlimitedRollDiceType
-    @bcdice.unlimitedRollDiceType
-  end
-
   attr_reader :sortType
 
   def setSortType(s)
     @sortType = s
-  end
-
-  def d66(*args)
-    @bcdice.getD66Value(*args)
-  end
-
-  def parren_killer(string)
-    @bcdice.parren_killer(string)
   end
 
   def changeText(string)
