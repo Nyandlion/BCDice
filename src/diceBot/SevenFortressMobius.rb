@@ -26,16 +26,21 @@ INFO_MESSAGE_TEXT
 
   def initialize
     super
-    @nightWizardDiceBot = NightWizard.new
+    @night_wizard = NightWizard.new
+  end
+
+  def bcdice=(value)
+    super
+    @night_wizard.bcdice = value
   end
 
   def changeText(string)
     string = string.sub(/(\d*)SFM/i) { "#{Regexp.last_match(1)}NW" }
 
-    string = @nightWizardDiceBot.changeText(string)
+    string = @night_wizard.changeText(string)
   end
 
   def dice_command_xRn(string, nick_e)
-    return @nightWizardDiceBot.checkRoll(string, nick_e)
+    return @night_wizard.checkRoll(string, nick_e)
   end
 end

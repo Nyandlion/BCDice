@@ -61,11 +61,11 @@ class DiceBot
 
   clearPrefixes
 
-  @@bcdice = nil
-
   DEFAULT_SEND_MODE = 2 # デフォルトの送信形式(0=結果のみ,1=0+式,2=1+ダイス個別)
 
   def initialize
+    @bcdice = nil
+
     @sendMode = DEFAULT_SEND_MODE # (0=結果のみ,1=0+式,2=1+ダイス個別)
     @sortType = 0 # ソート設定(1 = 足し算ダイスでソート有, 2 = バラバラロール（Bコマンド）でソート有, 3 = １と２両方ソート有）
     @sameDiceRerollCount = 0 # ゾロ目で振り足し(0=無し, 1=全部同じ目, 2=ダイスのうち2個以上同じ目)
@@ -86,6 +86,10 @@ class DiceBot
       self.class.setPrefixes(prefixs)
     end
   end
+
+  # BCDice本体
+  # @return [BCDice]
+  attr_accessor :bcdice
 
   attr_accessor :rerollLimitCount
 
@@ -176,28 +180,20 @@ class DiceBot
 
   attr_writer :upplerRollThreshold
 
-  def bcdice=(b)
-    @@bcdice = b
-  end
-
-  def bcdice
-    @@bcdice
-  end
-
   def rand(max)
-    @@bcdice.rand(max)
+    @bcdice.rand(max)
   end
 
   def roll(*args)
-    @@bcdice.roll(*args)
+    @bcdice.roll(*args)
   end
 
   def marshalSignOfInequality(*args)
-    @@bcdice.marshalSignOfInequality(*args)
+    @bcdice.marshalSignOfInequality(*args)
   end
 
   def unlimitedRollDiceType
-    @@bcdice.unlimitedRollDiceType
+    @bcdice.unlimitedRollDiceType
   end
 
   attr_reader :sortType
@@ -207,11 +203,11 @@ class DiceBot
   end
 
   def d66(*args)
-    @@bcdice.getD66Value(*args)
+    @bcdice.getD66Value(*args)
   end
 
   def parren_killer(string)
-    @@bcdice.parren_killer(string)
+    @bcdice.parren_killer(string)
   end
 
   def changeText(string)
@@ -220,7 +216,7 @@ class DiceBot
   end
 
   def dice_command(string, nick_e)
-    string = @@bcdice.getOriginalMessage if isGetOriginalMessage
+    string = @bcdice.getOriginalMessage if isGetOriginalMessage
 
     debug('dice_command Begin string', string)
     secret_flg = false
@@ -542,7 +538,7 @@ class DiceBot
       end
 
     text = text.gsub("\\n", "\n")
-    text = @@bcdice.rollTableMessageDiceText(text)
+    text = @bcdice.rollTableMessageDiceText(text)
 
     return nil if text.nil?
 
